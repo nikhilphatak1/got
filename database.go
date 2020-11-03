@@ -5,6 +5,7 @@ import (
     "crypto/sha1"
     "path/filepath"
     "time"
+    "os"
     "math/rand"
 )
 
@@ -36,10 +37,24 @@ func (d Database) Store(object Blob) {
 }
 
 func (d Database) writeObject(oid []byte, content string) {
+    rand.Seed(time.Now().UnixNano())
     oidString := string(oid)
     targetPath := filepath.Join(d.pathname, oidString[0:2], oidString[2:])
     dirname := filepath.Join(d.pathname, oidString[0:2])
     tempPath := filepath.Join(dirname, "temp_object_" + d.tempName(6))
+
+    if _, err := os.Stat(dirname); os.IsNotExist(err) {
+        // dir dirname does not exist, so create it
+        err = os.MkdirAll(dirname, 0777)
+		if err != nil {
+			fmt.Println("Error: Unable to create directory for gogit metadata")
+			panic("Error: Unable to create directory for gogit metadata")
+		}
+    }
+    tempFile, err := os.Create(tempPath)
+    // compress the content string
+    // then write it to tempFile
+    // rename tempFile path to targetPath and close the file descriptor (with error handling)
 }
 
 func (d Database) tempName(length int) string {

@@ -78,10 +78,11 @@ func gitCommit(argsWithoutCommit []string) {
 	gogitPath := filepath.Join(rootPath, ".gogit")
 	dbPath := filepath.Join(gogitPath, "objects")
 	workspace := NewWorkspace(rootPath)
-	dbHelper := NewDatabase(dbPath)
+	database := NewDatabase(dbPath)
 
 	for _, filename := range workspace.ListFiles() {
 		fileData := workspace.ReadFile(filename)
-		blob := NewBlob(fileData)
+        blob := NewBlob(fileData)
+        database.Store(blob)
 	}
 }
