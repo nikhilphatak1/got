@@ -81,7 +81,6 @@ func gitCommit(argsWithoutCommit []string) {
 	database := NewDatabase(dbPath)
 
 	for _, filename := range workspace.ListFiles() {
-        fmt.Println("file found",filename)
 		fileData := workspace.ReadFile(filename)
         blob := NewBlob(fileData)
         database.Store(blob)

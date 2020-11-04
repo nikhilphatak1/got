@@ -44,7 +44,6 @@ func (d Database) Store(object Blob) {
 func (d Database) writeObject(oid []byte, content string) {
     rand.Seed(time.Now().UnixNano())
     oidString := hex.EncodeToString(oid)
-    fmt.Println("oid string:",oidString)
     targetPath := filepath.Join(d.pathname, oidString[0:2], oidString[2:])
     dirname := filepath.Join(d.pathname, oidString[0:2])
     tempPath := filepath.Join(dirname, "temp_object_" + d.tempName(6))
