@@ -1,12 +1,15 @@
 package main
 
 import (
-    "fmt"
+    "bytes"
     "crypto/sha1"
+    "compress/gzip"
+    "io/ioutil"
+    "fmt"
+    "math/rand"
+    "os"
     "path/filepath"
     "time"
-    "os"
-    "math/rand"
 )
 
 // Database for storing info in .gogit/objects directory
@@ -51,10 +54,27 @@ func (d Database) writeObject(oid []byte, content string) {
 			panic("Error: Unable to create directory for gogit metadata")
 		}
     }
-    tempFile, err := os.Create(tempPath)
-    // compress the content string
-    // then write it to tempFile
+    // compress the content string and write it to tempFile
+    var b bytes.Buffer
+    w, err := gzip.NewWriterLevel(&b, gzip.BestSpeed)
+    if err != nil {
+        fmt.Println("Invalid compression level.", err)
+        panic(err)
+    }
+    w.Write([]byte(content))
+    w.Close()
+    err = ioutil.WriteFile(tempPath, b.Bytes(), 0777)
+    if err != nil {
+        fmt.Println("Failed writing file.", err)
+        panic(err)
+    }
+
     // rename tempFile path to targetPath and close the file descriptor (with error handling)
+    err = os.Rename(tempPath, targetPath)
+	if err != nil {
+        fmt.Println("Failed to rename file.", err)
+        panic(err)
+	}
 }
 
 func (d Database) tempName(length int) string {
