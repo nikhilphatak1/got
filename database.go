@@ -4,8 +4,9 @@ import (
     "bytes"
     "crypto/sha1"
     "compress/gzip"
-    "io/ioutil"
+    "encoding/hex"
     "fmt"
+    "io/ioutil"
     "math/rand"
     "os"
     "path/filepath"
@@ -32,6 +33,7 @@ func (d Database) Store(object Blob) {
     // followed by a null byte \x00 in hex, then the data as a byte array encoded as a string
     // using the %s verb.
     content := fmt.Sprintf("%s %d\x00%s", object.Type(), len(object.data), object.data)
+    //fmt.Println("content:", content)
 
     h := sha1.New()
     h.Write(object.data)
@@ -41,7 +43,8 @@ func (d Database) Store(object Blob) {
 
 func (d Database) writeObject(oid []byte, content string) {
     rand.Seed(time.Now().UnixNano())
-    oidString := string(oid)
+    oidString := hex.EncodeToString(oid)
+    fmt.Println("oid string:",oidString)
     targetPath := filepath.Join(d.pathname, oidString[0:2], oidString[2:])
     dirname := filepath.Join(d.pathname, oidString[0:2])
     tempPath := filepath.Join(dirname, "temp_object_" + d.tempName(6))
@@ -50,8 +53,8 @@ func (d Database) writeObject(oid []byte, content string) {
         // dir dirname does not exist, so create it
         err = os.MkdirAll(dirname, 0777)
 		if err != nil {
-			fmt.Println("Error: Unable to create directory for gogit metadata")
-			panic("Error: Unable to create directory for gogit metadata")
+			fmt.Println("Error: Unable to create directory for gogit metadata.", err)
+			panic(err)
 		}
     }
     // compress the content string and write it to tempFile
