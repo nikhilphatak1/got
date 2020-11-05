@@ -28,7 +28,7 @@ func NewDatabase(pathname string) Database {
 }
 
 // Store store the given blob
-func (d Database) Store(object Blob) {
+func (d Database) StoreBlob(object Blob) {
     // content: the data type (usually 'blob') then a space, then the number of data bytes
     // followed by a null byte \x00 in hex, then the data as a byte array encoded as a string
     // using the %s verb.
@@ -39,6 +39,10 @@ func (d Database) Store(object Blob) {
     h.Write(object.data)
     object.oid = h.Sum(nil)
     d.writeObject(object.oid, content)
+}
+
+func (d Database) StoreTree(object Tree) {
+
 }
 
 func (d Database) writeObject(oid []byte, content string) {

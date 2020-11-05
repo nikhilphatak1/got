@@ -21,8 +21,8 @@ func NewWorkspace(pathname string) Workspace {
     return workspace
 }
 
-// ListFiles list files in the project
-func (w Workspace) ListFiles() []string {
+// ListFilePaths list files in the project with full paths
+func (w Workspace) ListFilePaths() []string {
     var files []string
     err := filepath.Walk(w.pathname, func(path string, info os.FileInfo, err error) error {
         fi, err := os.Stat(path)
@@ -39,9 +39,6 @@ func (w Workspace) ListFiles() []string {
     if err != nil {
         panic(err)
     }
-    // for _, filename := range files {
-    //     fmt.Println("file", filename)
-    // }
     return files
 }
 

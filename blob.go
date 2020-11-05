@@ -22,3 +22,8 @@ func (b Blob) Type() string {
 func (b Blob) ToString() string {
     return string(b.data)
 }
+
+// Data data
+func (b Blob) Data() []byte {
+    return b.data
+}

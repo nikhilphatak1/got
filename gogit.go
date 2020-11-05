@@ -1,6 +1,7 @@
 package main
 
 import (
+    "encoding/hex"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -80,9 +81,13 @@ func gitCommit(argsWithoutCommit []string) {
 	workspace := NewWorkspace(rootPath)
 	database := NewDatabase(dbPath)
 
-	for _, filename := range workspace.ListFiles() {
+    commitFilePaths := workspace.ListFilePaths()
+    commitEntries := make([]Entry, len(commitFilePaths))
+	for i, filename := range commitFilePaths {
 		fileData := workspace.ReadFile(filename)
         blob := NewBlob(fileData)
-        database.Store(blob)
-	}
+        database.StoreBlob(blob)
+        commitEntries[i] = NewEntry(filename, hex.EncodeToString(blob.oid))
+    }
+    
 }
