@@ -6,7 +6,7 @@ import (
 
 // Tree tree gogit object
 type Tree struct {
-	oid string
+	oid []byte
 	entries []Entry
 	mode string
 }
@@ -34,3 +34,17 @@ func (t Tree) ToString() string {
 	return resultString
 }
 
+// Data data
+func (t Tree) Data() []byte {
+    return t.data
+}
+
+// SetOid set blob oid
+func (t Tree) SetOid(oid []byte) {
+    t.oid = oid
+}
+
+// GetOid set blob oid
+func (t Tree) GetOid(oid []byte) {
+    return t.oid
+}
