@@ -27,3 +27,8 @@ func (b Blob) ToString() string {
 func (b Blob) Data() []byte {
     return b.data
 }
+
+// SetOid set blob oid
+func (b Blob) SetOid(oid []byte) {
+    b.oid = []byte(oid)
+}
