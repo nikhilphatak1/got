@@ -30,15 +30,16 @@ func NewDatabase(pathname string) Database {
 // Store store the given blob
 func (d Database) Store(object StorableObject) {
     string := object.ToString()
-    // content: the data type (usually 'blob') then a space, then the number of data bytes
-    // followed by a null byte \x00 in hex, then the data as a byte array encoded as a string
-    // using the %s verb.
-    content := fmt.Sprintf("%s %d\x00%s", object.Type(), object.BytesCount(), string)
+    // content: the data type (usually 'blob') then a space,
+    // then the number of data bytes (number of runes) followed
+    // by a null byte \x00 in hex, then the data as a byte array
+    // encoded as a string using the %s verb.
+    content := fmt.Sprintf("%s %d\x00%s", object.Type(), len([]rune(string)), string)
 
     h := sha1.New()
     h.Write([]byte(content))
     object.SetOid(h.Sum(nil))
-    d.writeObject(object.oid, content)
+    d.writeObject(object.GetOid(), content)
 }
 
 func (d Database) writeObject(oid []byte, content string) {
