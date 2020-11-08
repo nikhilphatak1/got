@@ -7,28 +7,28 @@ type Blob struct {
 }
 
 // NewBlob create a new Blob struct
-func NewBlob(data []byte) Blob {
+func NewBlob(data []byte) *Blob {
     blob := Blob{}
     blob.data = data
-    return blob
+    return &blob
 }
 
 // Type returns "blob"
-func (b Blob) Type() string {
+func (b *Blob) Type() string {
     return "blob"
 }
 
 // ToString convert to string
-func (b Blob) ToString() string {
+func (b *Blob) ToString() string {
     return string(b.data)
 }
 
-// Data data
-func (b Blob) Data() []byte {
-    return b.data
+// SetOid set blob oid
+func (b *Blob) SetOid(oid []byte) {
+    b.oid = []byte(oid)
 }
 
-// SetOid set blob oid
-func (b Blob) SetOid(oid []byte) {
-    b.oid = []byte(oid)
+// GetOid blob oid
+func (b *Blob) GetOid() []byte {
+    return b.oid
 }

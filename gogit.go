@@ -8,14 +8,14 @@ import (
 )
 
 func main() {
-	fmt.Println("Go Git it.")
+	//fmt.Println("Go Git it.")
 	argsWithoutProgName := os.Args[1:]
 	if len(argsWithoutProgName) == 0 {
 		fmt.Println("Error: No gogit command given!")
 		panic("No gogit command given!")
 	}
 
-	fmt.Println("Info: Running command", argsWithoutProgName[0])
+	//fmt.Println("Info: Running command", argsWithoutProgName[0])
 	switch argsWithoutProgName[0] {
 	case "init":
 		gitInit(argsWithoutProgName[1:])
@@ -82,12 +82,14 @@ func gitCommit(argsWithoutCommit []string) {
 	database := NewDatabase(dbPath)
 
     commitFilePaths := workspace.ListFilePaths()
-    commitEntries := make([]Entry, len(commitFilePaths))
+    commitEntries := make([]*Entry, len(commitFilePaths))
 	for i, filename := range commitFilePaths {
 		fileData := workspace.ReadFile(filename)
         blob := NewBlob(fileData)
-        database.StoreBlob(blob)
+        database.Store(blob)
         commitEntries[i] = NewEntry(filename, hex.EncodeToString(blob.oid))
     }
-    
+    tree := NewTree(commitEntries)
+    database.Store(tree)
+    fmt.Print("tree: ", hex.EncodeToString(tree.GetOid()))
 }

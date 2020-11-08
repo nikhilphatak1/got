@@ -6,9 +6,10 @@ type Entry struct {
 	oid string
 }
 
-func NewEntry(name string, oid string) Entry {
+// NewEntry Entry constructor
+func NewEntry(name string, oid string) *Entry {
 	entry := Entry{}
 	entry.name = name
 	entry.oid = oid
-	return entry
+	return &entry
 }
