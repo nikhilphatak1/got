@@ -1,10 +1,13 @@
 package main
 
 import (
+    "bufio"
     "encoding/hex"
-	"fmt"
-	"os"
-	"path/filepath"
+    "fmt"
+    "io/ioutil"
+    "os"
+    "path/filepath"
+    "time"
 )
 
 func main() {
@@ -81,15 +84,29 @@ func gitCommit(argsWithoutCommit []string) {
 	workspace := NewWorkspace(rootPath)
 	database := NewDatabase(dbPath)
 
-    commitFilePaths := workspace.ListFilePaths()
-    commitEntries := make([]*Entry, len(commitFilePaths))
+	commitFilePaths := workspace.ListFilePaths()
+	commitEntries := make([]*Entry, len(commitFilePaths))
 	for i, filename := range commitFilePaths {
 		fileData := workspace.ReadFile(filename)
-        blob := NewBlob(fileData)
-        database.Store(blob)
-        commitEntries[i] = NewEntry(filename, hex.EncodeToString(blob.oid))
+		blob := NewBlob(fileData)
+		database.Store(blob)
+		commitEntries[i] = NewEntry(filename, hex.EncodeToString(blob.oid))
+	}
+	tree := NewTree(commitEntries)
+	database.Store(tree)
+
+	name := os.Getenv("GOGIT_AUTHOR_NAME")
+	email := os.Getenv("GOGIT_AUTHOR_EMAIL")
+    author = NewAuthor(name, email, time.Now())
+    reader := bufio.NewReader(os.Stdin)
+    message, err := reader.ReadString('\n')
+    if err != nil {
+        fmt.Println("Error: Unable to read commit message from Stdin.", err)
+		panic(err)
     }
-    tree := NewTree(commitEntries)
-    database.Store(tree)
-    fmt.Print("tree: ", hex.EncodeToString(tree.GetOid()))
+    commit := NewCommit(tree.GetOid(), author, message)
+	database.Store(commit)
+
+	ioutil.WriteFile(filepath.Join(gogitPath, "HEAD"), commit.GetOid(), 0777)
+	fmt.Println("(root-commit) %s %s", commit.GetOid(), message)
 }

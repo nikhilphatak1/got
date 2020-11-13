@@ -38,8 +38,7 @@ func (d Database) Store(object StorableObject) {
 
     h := sha1.New()
     h.Write([]byte(content))
-    object.SetOid(h.Sum(nil))
-    d.writeObject(object.GetOid(), content)
+    d.writeObject(h.Sum(nil), content)
 }
 
 func (d Database) writeObject(oid []byte, content string) {
