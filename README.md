@@ -6,5 +6,5 @@ An implementation of the Git version control system written in Go.
 ### init
 To initialize a repository in the current directory
 ```
-gogit init
+got init
 ```

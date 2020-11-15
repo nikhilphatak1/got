@@ -16,7 +16,7 @@ type Workspace struct {
 // NewWorkspace create a new FileHelper
 func NewWorkspace(pathname string) Workspace {
     workspace := Workspace{}
-    workspace.ignoreList = []string{".", "..", ".gogit"}
+    workspace.ignoreList = []string{".", "..", ".got"}
     workspace.pathname = pathname
     return workspace
 }
@@ -30,7 +30,7 @@ func (w Workspace) ListFilePaths() []string {
             fmt.Println(err)
             return nil
         }
-        mode := fi.Mode();
+        mode := fi.Mode()
         if !mode.IsDir() {
             files = append(files, path)
         }

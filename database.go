@@ -2,8 +2,8 @@ package main
 
 import (
     "bytes"
-    "crypto/sha1"
     "compress/gzip"
+    "crypto/sha1"
     "encoding/hex"
     "fmt"
     "io/ioutil"
@@ -13,10 +13,10 @@ import (
     "time"
 )
 
-// Database for storing info in .gogit/objects directory
+// Database for storing info in .got/objects directory
 type Database struct {
     pathname string
-    letters []rune
+    letters  []rune
 }
 
 // NewDatabase create and return a Database
@@ -46,15 +46,15 @@ func (d Database) writeObject(oid []byte, content string) {
     oidString := hex.EncodeToString(oid)
     targetPath := filepath.Join(d.pathname, oidString[0:2], oidString[2:])
     dirname := filepath.Join(d.pathname, oidString[0:2])
-    tempPath := filepath.Join(dirname, "temp_object_" + d.tempName(6))
+    tempPath := filepath.Join(dirname, "temp_object_"+d.tempName(6))
 
     if _, err := os.Stat(dirname); os.IsNotExist(err) {
         // dir dirname does not exist, so create it
         err = os.MkdirAll(dirname, 0777)
-		if err != nil {
-			fmt.Println("Error: Unable to create directory for gogit metadata.", err)
-			panic(err)
-		}
+        if err != nil {
+            fmt.Println("Error: Unable to create directory for got metadata.", err)
+            panic(err)
+        }
     }
     // compress the content string and write it to tempFile
     var b bytes.Buffer
@@ -73,10 +73,10 @@ func (d Database) writeObject(oid []byte, content string) {
 
     // rename tempFile path to targetPath and close the file descriptor (with error handling)
     err = os.Rename(tempPath, targetPath)
-	if err != nil {
+    if err != nil {
         fmt.Println("Failed to rename file.", err)
         panic(err)
-	}
+    }
 }
 
 func (d Database) tempName(length int) string {
