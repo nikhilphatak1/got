@@ -1,4 +1,4 @@
-# Go Git It
+# Got
 An implementation of the Git version control system written in Go.
 
 ## Supported Functionality

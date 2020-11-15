@@ -7,6 +7,7 @@ import (
     "io/ioutil"
     "os"
     "path/filepath"
+    "strings"
     "time"
 )
 
@@ -94,24 +95,21 @@ func gitCommit(argsWithoutCommit []string) {
     }
     tree := NewTree(commitEntries)
     database.Store(tree)
-    fmt.Println("stored tree in db")
 
-    name := os.Getenv("got_AUTHOR_NAME")
-    email := os.Getenv("got_AUTHOR_EMAIL")
+    name := os.Getenv("GOT_AUTHOR_NAME")
+    email := os.Getenv("GOT_AUTHOR_EMAIL")
     author := NewAuthor(name, email, time.Now())
     reader := bufio.NewReader(os.Stdin)
+    fmt.Print("Enter commit message: ")
     message, err := reader.ReadString('\n')
     if err != nil {
         fmt.Println("Error: Unable to read commit message from Stdin.", err)
         panic(err)
     }
-    fmt.Println("about to create commit")
+    message = strings.TrimRight(message, "\r\n")
     commit := NewCommit(tree.GetOid(), author, message)
-    fmt.Println("about to store commit:", commit.ToString())
     database.Store(commit)
 
-    fmt.Println("about to write HEAD")
-    ioutil.WriteFile(filepath.Join(gotPath, "HEAD"), commit.GetOid(), 0777)
-    fmt.Println("about to print root commit")
+    ioutil.WriteFile(filepath.Join(gotPath, "HEAD"), []byte(hex.EncodeToString(commit.GetOid())), 0777)
     fmt.Printf("(root-commit) %s %s\n", hex.EncodeToString(commit.GetOid()), message)
 }
