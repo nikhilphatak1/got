@@ -94,19 +94,24 @@ func gitCommit(argsWithoutCommit []string) {
 	}
 	tree := NewTree(commitEntries)
 	database.Store(tree)
+	fmt.Println("stored tree in db")
 
 	name := os.Getenv("GOGIT_AUTHOR_NAME")
 	email := os.Getenv("GOGIT_AUTHOR_EMAIL")
-    author = NewAuthor(name, email, time.Now())
+    author := NewAuthor(name, email, time.Now())
     reader := bufio.NewReader(os.Stdin)
     message, err := reader.ReadString('\n')
     if err != nil {
         fmt.Println("Error: Unable to read commit message from Stdin.", err)
 		panic(err)
-    }
-    commit := NewCommit(tree.GetOid(), author, message)
+	}
+	fmt.Println("about to create commit")
+	commit := NewCommit(tree.GetOid(), author, message)
+	fmt.Println("about to store commit:", commit.ToString())
 	database.Store(commit)
 
+	fmt.Println("about to write HEAD")
 	ioutil.WriteFile(filepath.Join(gogitPath, "HEAD"), commit.GetOid(), 0777)
-	fmt.Println("(root-commit) %s %s", commit.GetOid(), message)
+	fmt.Println("about to print root commit")
+	fmt.Printf("(root-commit) %s %s\n", hex.EncodeToString(commit.GetOid()), message)
 }
