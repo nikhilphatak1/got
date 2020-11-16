@@ -7,15 +7,17 @@ import (
 
 // Commit commit object conforms to StorableObject interface
 type Commit struct {
-    treeOid    []byte
-    author  Author
-    message string
-    oid     []byte
+    parentOid []byte
+    treeOid   []byte
+    author    Author
+    message   string
+    oid       []byte
 }
 
 // NewCommit Commit constructor
-func NewCommit(treeOid []byte, author *Author, message string) *Commit {
+func NewCommit(parent []byte, treeOid []byte, author *Author, message string) *Commit {
     commit := Commit{}
+    commit.parentOid = parent
     commit.treeOid = treeOid
     commit.author = *author
     commit.message = message
@@ -29,8 +31,16 @@ func (c *Commit) Type() string {
 
 // ToString convert to string
 func (c *Commit) ToString() string {
-    return fmt.Sprintf("tree %s\nauthor %s\ncommitter %s\n\n%s",
-        hex.EncodeToString(c.treeOid), c.author.ToString(), c.author.ToString(), c.message)
+    var str string
+    if c.parentOid == nil {
+        str = fmt.Sprintf("tree %s\nauthor %s\ncommitter %s\n\n%s",
+            hex.EncodeToString(c.treeOid), c.author.ToString(), c.author.ToString(), c.message)
+    } else {
+        str = fmt.Sprintf("tree %s\nparent %s\nauthor %s\ncommitter %s\n\n%s",
+            hex.EncodeToString(c.treeOid), hex.EncodeToString(c.parentOid), c.author.ToString(),
+            c.author.ToString(), c.message)
+    }
+    return str
 }
 
 // SetOid set commit oid

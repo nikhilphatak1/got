@@ -84,6 +84,7 @@ func gitCommit(argsWithoutCommit []string) {
     dbPath := filepath.Join(gotPath, "objects")
     workspace := NewWorkspace(rootPath)
     database := NewDatabase(dbPath)
+    refs := NewRefs(gotPath)
 
     commitFilePaths := workspace.ListFilePaths()
     commitEntries := make([]*Entry, len(commitFilePaths))
@@ -96,8 +97,10 @@ func gitCommit(argsWithoutCommit []string) {
     tree := NewTree(commitEntries)
     database.Store(tree)
 
+    parent := refs.ReadHead()
     name := os.Getenv("GOT_AUTHOR_NAME")
     email := os.Getenv("GOT_AUTHOR_EMAIL")
+    // TODO add check for if name or email of author is empty, print warning but don't exit
     author := NewAuthor(name, email, time.Now())
     reader := bufio.NewReader(os.Stdin)
     fmt.Print("Enter commit message: ")
@@ -107,9 +110,22 @@ func gitCommit(argsWithoutCommit []string) {
         panic(err)
     }
     message = strings.TrimRight(message, "\r\n")
-    commit := NewCommit(tree.GetOid(), author, message)
+
+    commit := NewCommit(parent, tree.GetOid(), author, message)
     database.Store(commit)
+    err = refs.UpdateHead(commit.GetOid())
+    if (err != nil) {
+        fmt.Println("Error: Unable to update .got/HEAD.", err)
+        panic(err)
+    }
+
+    var rootPrefix string
+    if parent == nil {
+        rootPrefix = "(root-commit) "
+    } else {
+        rootPrefix = ""
+    }
 
     ioutil.WriteFile(filepath.Join(gotPath, "HEAD"), []byte(hex.EncodeToString(commit.GetOid())), 0777)
-    fmt.Printf("(root-commit) %s %s\n", hex.EncodeToString(commit.GetOid()), message)
+    fmt.Printf("[%s%s] %s\n", rootPrefix, hex.EncodeToString(commit.GetOid()), message)
 }
