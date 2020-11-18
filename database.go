@@ -46,6 +46,11 @@ func (d Database) writeObject(oid []byte, content string) {
     rand.Seed(time.Now().UnixNano())
     oidString := hex.EncodeToString(oid)
     targetPath := filepath.Join(d.pathname, oidString[0:2], oidString[2:])
+    if _, err := os.Stat(targetPath); !os.IsNotExist(err) {
+        // file exists, so do not overwrite
+		return
+    }
+
     dirname := filepath.Join(d.pathname, oidString[0:2])
     tempPath := filepath.Join(dirname, "temp_object_"+d.tempName(6))
 
