@@ -92,7 +92,9 @@ func gitCommit(argsWithoutCommit []string) {
         fileData := workspace.ReadFile(filename)
         blob := NewBlob(fileData)
         database.Store(blob)
-        commitEntries[i] = NewEntry(filename, hex.EncodeToString(blob.oid))
+
+        fileInfo := workspace.StatFile(filename)
+        commitEntries[i] = NewEntry(filename, hex.EncodeToString(blob.oid), fileInfo)
     }
     tree := NewTree(commitEntries)
     database.Store(tree)

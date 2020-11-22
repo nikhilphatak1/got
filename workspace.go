@@ -22,7 +22,7 @@ func NewWorkspace(pathname string) Workspace {
 }
 
 // ListFilePaths list files in the project with full paths
-func (w Workspace) ListFilePaths() []string {
+func (w *Workspace) ListFilePaths() []string {
     var files []string
     err := filepath.Walk(w.pathname, func(path string, info os.FileInfo, err error) error {
         fi, err := os.Stat(path)
@@ -43,7 +43,7 @@ func (w Workspace) ListFilePaths() []string {
 }
 
 // ReadFile read the contents of the file in the file helper's directory
-func (w Workspace) ReadFile(filepath string) []byte {
+func (w *Workspace) ReadFile(filepath string) []byte {
     //targetFilePath := filepath.Join(w.pathname, filename)
     fileContents, err := ioutil.ReadFile(filepath)
     if err != nil {
@@ -51,4 +51,14 @@ func (w Workspace) ReadFile(filepath string) []byte {
         panic(err)
     }
     return fileContents
+}
+
+// StatFile syscall stat on file
+func (w *Workspace) StatFile(filepath string) os.FileInfo {
+    fileInfo, err := os.Stat(filepath)
+    if err != nil {
+        fmt.Println("Error: Unable to stat file", filepath, err)
+        panic(err)
+    }
+    return fileInfo
 }
