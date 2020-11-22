@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/hex"
-	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 )
@@ -45,8 +45,7 @@ func (r *Refs) ReadHead() []byte {
 		// HEAD file exists, so read and return
 		contents, err := ioutil.ReadFile(r.headPath())
 		if err != nil {
-			fmt.Println("Error: Unable to read .got/HEAD file.", err)
-			panic(err)
+			log.Panicln("Unable to read .got/HEAD file.", err)
 		}
 		return contents
 	}

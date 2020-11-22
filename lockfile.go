@@ -1,7 +1,7 @@
 package main
 
 import (
-    "fmt"
+    "log"
     "os"
     "path/filepath"
 )
@@ -48,8 +48,9 @@ func NewLockfile(path string) *Lockfile {
 // HoldForUpdate attempt to acquire lock
 func (l *Lockfile) HoldForUpdate() bool {
     if l.lock == nil {
-        acquiredFile, err := os.Open(l.lockPath)
+        acquiredFile, err := os.OpenFile(l.lockPath, os.O_RDWR|os.O_CREATE, 0755)
         if err != nil {
+            log.Println("Unable to open lockfile ", l.lockPath, err)
             return false
         }
         l.lock = acquiredFile
@@ -61,13 +62,11 @@ func (l *Lockfile) HoldForUpdate() bool {
 func (l *Lockfile) Write(content string) {
     err := l.raiseOnStaleLock()
     if err != nil {
-        fmt.Println("Error: Stale lock.", err)
-        panic(err)
+        log.Panicln("Stale lock.", err)
     }
     _, err = l.lock.WriteString(content)
     if err != nil {
-        fmt.Println("Error: Unable to write to lockfile.", err)
-        panic(err)
+        log.Panicln("Unable to write to lockfile.", err)
     }
 }
 
@@ -75,20 +74,17 @@ func (l *Lockfile) Write(content string) {
 func (l *Lockfile) Commit() {
     err := l.raiseOnStaleLock()
     if err != nil {
-        fmt.Println("Error: Stale lock.", err)
-        panic(err)
+        log.Panicln("Stale lock.", err)
     }
 
     err = l.lock.Close()
     if err != nil {
-        fmt.Println("Error: Unable to close lockfile.", err)
-        panic(err)
+        log.Panicln("Unable to close lockfile.", err)
     }
 
     err = os.Rename(l.lockPath, l.filePath)
     if err != nil {
-        fmt.Println("Failed to rename lockfile.", err)
-        panic(err)
+        log.Panicln("Failed to rename lockfile.", err)
     }
     l.lock = nil
 }

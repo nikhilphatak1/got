@@ -7,6 +7,7 @@ import (
     "encoding/hex"
     "fmt"
     "io/ioutil"
+    "log"
     "math/rand"
     "os"
     "path/filepath"
@@ -58,30 +59,26 @@ func (d Database) writeObject(oid []byte, content string) {
         // dir dirname does not exist, so create it
         err = os.MkdirAll(dirname, 0777)
         if err != nil {
-            fmt.Println("Error: Unable to create directory for got metadata.", err)
-            panic(err)
+            log.Panicln("Unable to create directory for got metadata.", err)
         }
     }
     // compress the content string and write it to tempFile
     var b bytes.Buffer
     w, err := gzip.NewWriterLevel(&b, gzip.BestSpeed)
     if err != nil {
-        fmt.Println("Invalid compression level.", err)
-        panic(err)
+        log.Panicln("Invalid compression level.", err)
     }
     w.Write([]byte(content))
     w.Close()
     err = ioutil.WriteFile(tempPath, b.Bytes(), 0777)
     if err != nil {
-        fmt.Println("Failed writing file.", err)
-        panic(err)
+        log.Panicln("Failed writing file.", err)
     }
 
     // rename tempFile path to targetPath and close the file descriptor (with error handling)
     err = os.Rename(tempPath, targetPath)
     if err != nil {
-        fmt.Println("Failed to rename file.", err)
-        panic(err)
+        log.Panicln("Failed to rename file.", err)
     }
 }
 

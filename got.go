@@ -5,6 +5,7 @@ import (
     "encoding/hex"
     "fmt"
     "io/ioutil"
+    "log"
     "os"
     "path/filepath"
     "strings"
@@ -12,11 +13,9 @@ import (
 )
 
 func main() {
-    //fmt.Println("Go Git it.")
     argsWithoutProgName := os.Args[1:]
     if len(argsWithoutProgName) == 0 {
-        fmt.Println("Error: No got command given!")
-        panic("No got command given!")
+        log.Panicln("No got command given!")
     }
 
     //fmt.Println("Info: Running command", argsWithoutProgName[0])
@@ -26,8 +25,7 @@ func main() {
     case "commit":
         gitCommit(argsWithoutProgName[1:])
     default:
-        fmt.Println("Error:", argsWithoutProgName[0], "is not a valid got command")
-        panic(fmt.Sprintf("Error: %s is not a valid got command", argsWithoutProgName[0]))
+        log.Panicln(argsWithoutProgName[0], "is not a valid got command")
     }
 }
 
@@ -38,25 +36,21 @@ func gitInit(argsWithoutInit []string) {
     if len(argsWithoutInit) == 0 {
         rootPath, err = os.Getwd()
         if err != nil {
-            fmt.Println("Error: Unable to get current working directory.", err)
-            panic(err)
+            log.Panicln("Unable to get current working directory.", err)
         }
     } else {
         rootPath = argsWithoutInit[0]
         rootPath, err = filepath.Abs(rootPath)
         if err != nil {
-            fmt.Println("Error: Invalid path.", err)
-            panic(err)
+            log.Panicln("Invalid path.", err)
         }
         var fileInfo os.FileInfo
         fileInfo, err = os.Stat(rootPath)
         if err != nil {
-            fmt.Println("Error: Unable to get current working directory.", err)
-            panic(err)
+            log.Panicln("Unable to get current working directory.", err)
         }
         if !fileInfo.IsDir() {
-            fmt.Println("Error: Given path is not a directory")
-            panic("Error: Given path is not a directory")
+            log.Panicln("Given path is not a directory")
         }
     }
 
@@ -66,8 +60,7 @@ func gitInit(argsWithoutInit []string) {
     for _, p := range gotDirs {
         err = os.MkdirAll(filepath.Join(gotPath, p), 0777)
         if err != nil {
-            fmt.Println("Error: Unable to create directory for got metadata")
-            panic("Error: Unable to create directory for got metadata")
+            log.Panicln("Unable to create directory for got metadata")
         }
     }
 
@@ -77,8 +70,7 @@ func gitInit(argsWithoutInit []string) {
 func gitCommit(argsWithoutCommit []string) {
     rootPath, err := os.Getwd()
     if err != nil {
-        fmt.Println("Error: Unable to get current working directory.", err)
-        panic(err)
+        log.Panicln("Unable to get current working directory.", err)
     }
     gotPath := filepath.Join(rootPath, ".got")
     dbPath := filepath.Join(gotPath, "objects")
@@ -108,8 +100,7 @@ func gitCommit(argsWithoutCommit []string) {
     fmt.Print("Enter commit message: ")
     message, err := reader.ReadString('\n')
     if err != nil {
-        fmt.Println("Error: Unable to read commit message from Stdin.", err)
-        panic(err)
+        log.Panicln("Unable to read commit message from Stdin.", err)
     }
     message = strings.TrimRight(message, "\r\n")
 
@@ -117,8 +108,7 @@ func gitCommit(argsWithoutCommit []string) {
     database.Store(commit)
     err = refs.UpdateHead(commit.GetOid())
     if (err != nil) {
-        fmt.Println("Error: Unable to update .got/HEAD.", err)
-        panic(err)
+        log.Panicln("Unable to update .got/HEAD.", err)
     }
 
     var rootPrefix string
