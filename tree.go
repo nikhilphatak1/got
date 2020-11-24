@@ -2,19 +2,53 @@ package main
 
 import (
     "fmt"
+    "log"
+    "path/filepath"
 )
 
 // Tree tree got object
 type Tree struct {
     oid     []byte
-    entries []*Entry
+    entries map[string]interface{}
 }
 
 // NewTree tree constructor
-func NewTree(entries []*Entry) *Tree {
+func NewTree() *Tree {
     tree := Tree{}
-    tree.entries = entries
+    tree.entries = make(map[string]interface{})
     return &tree
+}
+
+// BuildTree build a Merkle tree based on directory structure
+func BuildTree(entries []*Entry) *Tree {
+    root := NewTree()
+
+    for _, singleEntry := range entries {
+        root.AddEntry(singleEntry.ParentDirectories(), singleEntry)
+    }
+
+    return root
+}
+
+// AddEntry add entry to this tree using the list of parent directories
+func (t *Tree) AddEntry(parents []string, entry *Entry) {
+    if len(parents) == 0 {
+        _, baseName := filepath.Split(entry.name)
+        t.entries[baseName] = entry
+    } else {
+        _, baseName := filepath.Split(parents[0])
+        var subTree *Tree
+        var ok bool
+        if t.entries[baseName] != nil {
+            subTree, ok = t.entries[baseName].(*Tree)
+            if !ok {
+                log.Panicln("Unable to cast subtree to Tree")
+            }
+        } else {
+            subTree = NewTree()
+        }
+        subTree.AddEntry(parents[1:], entry)
+    }
 }
 
 // Type "tree"

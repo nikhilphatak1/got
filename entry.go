@@ -1,7 +1,9 @@
 package main
 
 import (
+    "log"
     "os"
+    "path/filepath"
 )
 
 // Entry got entry
@@ -22,6 +24,25 @@ func NewEntry(name string, oid string, info os.FileInfo) *Entry {
     entry.standardMode = "100644"
     entry.executableMode = "100755"
     return &entry
+}
+
+// ParentDirectories descending list of paths for this entry's name,
+// starting from one dir name and approaching (but not including)
+// the full entry name
+func (e *Entry) ParentDirectories() []string {
+    var dirList []string
+    var parent string
+    for parent != "/" {
+        parent = filepath.Dir(e.name)
+        dirList = append([]string{parent}, dirList...)
+    }
+
+    log.Println("List from ParentDirectories:")
+    for _, j := range dirList {
+        log.Println(j)
+    }
+
+    return dirList
 }
 
 // Mode entry mode

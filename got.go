@@ -88,8 +88,9 @@ func gitCommit(argsWithoutCommit []string) {
         fileInfo := workspace.StatFile(filename)
         commitEntries[i] = NewEntry(filename, hex.EncodeToString(blob.oid), fileInfo)
     }
-    tree := NewTree(commitEntries)
-    database.Store(tree)
+    root := BuildTree(commitEntries)
+    // TODO implement Tree.Traverse
+    root.Traverse(() -> |tree| database.Store(tree)) // this doesn't make sense yet
 
     parent := refs.ReadHead()
     name := os.Getenv("GOT_AUTHOR_NAME")
