@@ -79,14 +79,14 @@ func gitCommit(argsWithoutCommit []string) {
     refs := NewRefs(gotPath)
 
     commitFilePaths := workspace.ListFilePaths()
-    commitEntries := make([]*Entry, len(commitFilePaths))
+    commitEntries := make([]Entry, len(commitFilePaths))
     for i, filename := range commitFilePaths {
         fileData := workspace.ReadFile(filename)
         blob := NewBlob(fileData)
         database.Store(blob)
 
         fileInfo := workspace.StatFile(filename)
-        commitEntries[i] = NewEntry(filename, hex.EncodeToString(blob.oid), fileInfo)
+        commitEntries[i] = *NewEntry(filename, hex.EncodeToString(blob.oid), fileInfo)
     }
     root := BuildTree(commitEntries)
     // TODO implement Tree.Traverse
