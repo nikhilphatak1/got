@@ -89,8 +89,7 @@ func gitCommit(argsWithoutCommit []string) {
         commitEntries[i] = *NewEntry(filename, hex.EncodeToString(blob.oid), fileInfo)
     }
     root := BuildTree(commitEntries)
-    // TODO implement Tree.Traverse
-    root.Traverse(() -> |tree| database.Store(tree)) // this doesn't make sense yet
+    root.Traverse(func(t *Tree) { database.Store(t) })
 
     parent := refs.ReadHead()
     name := os.Getenv("GOT_AUTHOR_NAME")
@@ -105,8 +104,9 @@ func gitCommit(argsWithoutCommit []string) {
     }
     message = strings.TrimRight(message, "\r\n")
 
-    commit := NewCommit(parent, tree.GetOid(), author, message)
+    commit := NewCommit(parent, root.GetOid(), author, message)
     database.Store(commit)
+
     err = refs.UpdateHead(commit.GetOid())
     if (err != nil) {
         log.Panicln("Unable to update .got/HEAD.", err)

@@ -4,6 +4,7 @@ import (
     "fmt"
     "log"
     "path/filepath"
+    "reflect"
     "sort"
 )
 
@@ -18,32 +19,32 @@ type By func(e1, e2 *Entry) bool
 
 // Sort is a method on the function type, By, that sorts the argument slice according to the function.
 func (by By) Sort(entries []Entry) {
-	es := &entrySorter{
-		entries: entries,
-		by:      by, // The Sort method's receiver is the function (closure) that defines the sort order.
-	}
-	sort.Sort(es)
+    es := &entrySorter{
+        entries: entries,
+        by:      by, // The Sort method's receiver is the function (closure) that defines the sort order.
+    }
+    sort.Sort(es)
 }
 
 // planetSorter joins a By function and a slice of Planets to be sorted.
 type entrySorter struct {
-	entries []Entry
-	by      func(e1, e2 *Entry) bool // Closure used in the Less method.
+    entries []Entry
+    by      func(e1, e2 *Entry) bool // Closure used in the Less method.
 }
 
 // Len is part of sort.Interface.
 func (e *entrySorter) Len() int {
-	return len(e.entries)
+    return len(e.entries)
 }
 
 // Swap is part of sort.Interface.
-func (s *entrySorter) Swap(i, j int) {
-	s.entries[i], s.entries[j] = s.entries[j], s.entries[i]
+func (e *entrySorter) Swap(i, j int) {
+    e.entries[i], e.entries[j] = e.entries[j], e.entries[i]
 }
 
 // Less is part of sort.Interface. It is implemented by calling the "by" closure in the sorter.
-func (s *entrySorter) Less(i, j int) bool {
-	return s.by(&s.entries[i], &s.entries[j])
+func (e *entrySorter) Less(i, j int) bool {
+    return e.by(&e.entries[i], &e.entries[j])
 }
 
 // NewTree tree constructor
@@ -56,7 +57,7 @@ func NewTree() *Tree {
 // BuildTree build a Merkle tree based on directory structure
 func BuildTree(entries []Entry) *Tree {
     name := func(e1, e2 *Entry) bool {
-		return e1.name < e2.name
+        return e1.name < e2.name
     }
     By(name).Sort(entries)
     root := NewTree()
@@ -94,21 +95,40 @@ func (t *Tree) Type() string {
     return "tree"
 }
 
-func (t *Tree) Traverse(f func (Tree)) {
-    for _, baseName := t.entries {
-        
+// Traverse recursively store all trees this tree contains
+// and call the passed function f on each tree. As a rule,
+// call f on the parent tree after calling it on the child tree.
+func (t *Tree) Traverse(f func(*Tree)) {
+    for _, potentialSubtree := range t.entries {
+        if reflect.TypeOf(potentialSubtree).String() == "main.Tree" {
+            potentialSubtree.(*Tree).Traverse(f)
+        }
     }
-    f(*t)
+    f(t)
 }
 
 // ToString convert tree to string
+// TODO update this for new tree structure
 func (t *Tree) ToString() string {
     resultString := ""
-    for _, entry := range t.entries {
-        tmpString := fmt.Sprintf("%s %s\x00%s", entry.Mode(), entry.name, entry.oid)
+    for name, entry := range t.entries {
+        var tmpString string
+        if reflect.TypeOf(entry).String() == "main.*Tree" {
+            tmpString = fmt.Sprintf(
+                "%s %s\x00%s", entry.(*Tree).Mode(), name, entry.(*Tree).oid)
+        } else if reflect.TypeOf(entry).String() == "main.*Entry" {
+            tmpString = fmt.Sprintf(
+                "%s %s\x00%s", entry.(*Entry).Mode(), name, entry.(*Entry).oid)
+        }
+
         resultString = resultString + tmpString
     }
     return resultString
+}
+
+// Mode tree mode
+func (t *Tree) Mode() string {
+    return "40000" // directory mode
 }
 
 // SetOid set blob oid
