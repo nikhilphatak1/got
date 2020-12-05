@@ -1,15 +1,16 @@
 package main
 
 import (
-    "bufio"
-    "encoding/hex"
-    "fmt"
-    "io/ioutil"
-    "log"
+	"bufio"
+	"encoding/hex"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"path/filepath"
+	"strings"
+	"time"
     "os"
-    "path/filepath"
-    "strings"
-    "time"
+    "github.com/nikhilphatak1/got/internal/got"
 )
 
 func main() {
@@ -21,15 +22,16 @@ func main() {
     //fmt.Println("Info: Running command", argsWithoutProgName[0])
     switch argsWithoutProgName[0] {
     case "init":
-        gitInit(argsWithoutProgName[1:])
+        GotInit(argsWithoutProgName[1:])
     case "commit":
-        gitCommit(argsWithoutProgName[1:])
+        GotCommit(argsWithoutProgName[1:])
     default:
         log.Panicln(argsWithoutProgName[0], "is not a valid got command")
     }
 }
 
-func gitInit(argsWithoutInit []string) {
+// GotInit init
+func GotInit(argsWithoutInit []string) {
     // get the path either from command line args or using the cwd
     var rootPath string
     var err error
@@ -67,35 +69,36 @@ func gitInit(argsWithoutInit []string) {
     fmt.Println("Info: Initializing in directory", rootPath) // for example /home/user
 }
 
-func gitCommit(argsWithoutCommit []string) {
+// GotCommit commit
+func GotCommit(argsWithoutCommit []string) {
     rootPath, err := os.Getwd()
     if err != nil {
         log.Panicln("Unable to get current working directory.", err)
     }
     gotPath := filepath.Join(rootPath, ".got")
     dbPath := filepath.Join(gotPath, "objects")
-    workspace := NewWorkspace(rootPath)
-    database := NewDatabase(dbPath)
-    refs := NewRefs(gotPath)
+    workspace := got.NewWorkspace(rootPath)
+    database := got.NewDatabase(dbPath)
+    refs := got.NewRefs(gotPath)
 
     commitFilePaths := workspace.ListFilePaths()
-    commitEntries := make([]Entry, len(commitFilePaths))
+    commitEntries := make([]got.Entry, len(commitFilePaths))
     for i, filename := range commitFilePaths {
         fileData := workspace.ReadFile(filename)
-        blob := NewBlob(fileData)
+        blob := got.NewBlob(fileData)
         database.Store(blob)
 
         fileInfo := workspace.StatFile(filename)
-        commitEntries[i] = *NewEntry(filename, hex.EncodeToString(blob.oid), fileInfo)
+        commitEntries[i] = *got.NewEntry(filename, hex.EncodeToString(blob.GetOid()), fileInfo)
     }
-    root := BuildTree(commitEntries)
-    root.Traverse(func(t *Tree) { database.Store(t) })
+    root := got.BuildTree(commitEntries)
+    root.Traverse(func(t *got.Tree) { database.Store(t) })
 
     parent := refs.ReadHead()
     name := os.Getenv("GOT_AUTHOR_NAME")
     email := os.Getenv("GOT_AUTHOR_EMAIL")
     // TODO add check for if name or email of author is empty, print warning but don't exit
-    author := NewAuthor(name, email, time.Now())
+    author := got.NewAuthor(name, email, time.Now())
     reader := bufio.NewReader(os.Stdin)
     fmt.Print("Enter commit message: ")
     message, err := reader.ReadString('\n')
@@ -104,7 +107,7 @@ func gitCommit(argsWithoutCommit []string) {
     }
     message = strings.TrimRight(message, "\r\n")
 
-    commit := NewCommit(parent, root.GetOid(), author, message)
+    commit := got.NewCommit(parent, root.GetOid(), author, message)
     database.Store(commit)
 
     err = refs.UpdateHead(commit.GetOid())

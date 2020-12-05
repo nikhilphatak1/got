@@ -1,4 +1,4 @@
-package main
+package got
 
 // StorableObject struct that can be written to got DB
 type StorableObject interface {

@@ -1,4 +1,4 @@
-package main
+package got
 
 // Blob helper for blob manipulation
 type Blob struct {
