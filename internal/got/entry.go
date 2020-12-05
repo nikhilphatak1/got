@@ -15,6 +15,11 @@ type Entry struct {
     executableMode string
 }
 
+// TODO extract constants to const blocks
+// const (
+//     standardMode =
+// )
+
 // NewEntry Entry constructor
 func NewEntry(name string, oid string, info os.FileInfo) *Entry {
     entry := Entry{}

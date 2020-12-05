@@ -1,14 +1,14 @@
 package main
 
 import (
-	"bufio"
-	"encoding/hex"
-	"fmt"
-	"io/ioutil"
-	"log"
-	"path/filepath"
-	"strings"
-	"time"
+    "bufio"
+    "encoding/hex"
+    "fmt"
+    "io/ioutil"
+    "log"
+    "path/filepath"
+    "strings"
+    "time"
     "os"
     "github.com/nikhilphatak1/got/internal/got"
 )
@@ -25,6 +25,8 @@ func main() {
         GotInit(argsWithoutProgName[1:])
     case "commit":
         GotCommit(argsWithoutProgName[1:])
+    case "add":
+        GotAdd(argsWithoutProgName[1:])
     default:
         log.Panicln(argsWithoutProgName[0], "is not a valid got command")
     }
@@ -124,4 +126,29 @@ func GotCommit(argsWithoutCommit []string) {
 
     ioutil.WriteFile(filepath.Join(gotPath, "HEAD"), []byte(hex.EncodeToString(commit.GetOid())), 0777)
     fmt.Printf("[%s%s] %s\n", rootPrefix, hex.EncodeToString(commit.GetOid()), message)
+}
+
+// GotAdd add
+func GotAdd(argsWithoutAdd []string) {
+    rootPath, err := os.Getwd()
+    if err != nil {
+        log.Panicln("Unable to get current working directory.", err)
+    }
+    gotPath := filepath.Join(rootPath, ".got")
+    dbPath := filepath.Join(gotPath, "objects")
+    indexPath := filepath.Join(gotPath, "index")
+
+    workspace := got.NewWorkspace(rootPath)
+    database := got.NewDatabase(dbPath)
+    index := got.NewIndex(indexPath)
+
+    targetPath := argsWithoutAdd[0]
+    data := workspace.ReadFile(targetPath)
+    stat := workspace.StatFile(targetPath)
+
+    blob := got.NewBlob(data)
+    database.Store(blob)
+    index.Add(targetPath, hex.EncodeToString(blob.GetOid()), stat)
+
+    index.WriteUpdates()
 }
