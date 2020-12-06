@@ -1,16 +1,16 @@
 package got
 
 import (
-	"encoding/hex"
-	"io/ioutil"
-	"log"
-	"os"
-	"path/filepath"
+    "encoding/hex"
+    "io/ioutil"
+    "log"
+    "os"
+    "path/filepath"
 )
 
 // Refs abstraction for Got refs
 type Refs struct {
-	pathname string
+    pathname string
 }
 
 // LockDeniedError e
@@ -21,38 +21,38 @@ func (m LockDeniedError) Error() string {
 
 // NewRefs Refs constructor
 func NewRefs(pathname string) *Refs {
-	refs := Refs{}
-	refs.pathname = pathname
-	return &refs
+    refs := Refs{}
+    refs.pathname = pathname
+    return &refs
 }
 
 // UpdateHead update .got/HEAD
 func (r *Refs) UpdateHead(oid []byte) error {
-	lockfile := NewLockfile(r.headPath())
-	if !lockfile.HoldForUpdate() {
-		return LockDeniedError{}
-	}
+    lockfile := NewLockfile(r.headPath())
+    if !lockfile.HoldForUpdate() {
+        return LockDeniedError{}
+    }
 
-	lockfile.Write(hex.EncodeToString(oid))
-	lockfile.Write("\n")
-	lockfile.Commit()
-	return nil
+    lockfile.Write(hex.EncodeToString(oid))
+    lockfile.Write("\n")
+    lockfile.Commit()
+    return nil
 }
 
 // ReadHead return contents of .got/HEAD
 func (r *Refs) ReadHead() []byte {
-	if _, err := os.Stat(r.headPath()); !os.IsNotExist(err) {
-		// HEAD file exists, so read and return
-		contents, err := ioutil.ReadFile(r.headPath())
-		if err != nil {
-			log.Panicln("Unable to read .got/HEAD file.", err)
-		}
-		return contents
-	}
-	// HEAD does not exist, so return nil
-	return nil
+    if _, err := os.Stat(r.headPath()); !os.IsNotExist(err) {
+        // HEAD file exists, so read and return
+        contents, err := ioutil.ReadFile(r.headPath())
+        if err != nil {
+            log.Panicln("Unable to read .got/HEAD file.", err)
+        }
+        return contents
+    }
+    // HEAD does not exist, so return nil
+    return nil
 }
 
 func (r *Refs) headPath() string {
-	return filepath.Join(r.pathname, "HEAD")
+    return filepath.Join(r.pathname, "HEAD")
 }
