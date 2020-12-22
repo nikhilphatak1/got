@@ -21,7 +21,7 @@ func NewAuthor(name string, email string, time time.Time) *Author {
     return &author
 }
 
-// ToString convert author to string
-func (a *Author) ToString() string {
+// String convert author to string
+func (a *Author) String() string {
     return fmt.Sprintf("%s <%s> %s", a.name, a.email, a.time.String())
 }

@@ -29,16 +29,16 @@ func (c *Commit) Type() string {
     return "commit"
 }
 
-// ToString convert to string
-func (c *Commit) ToString() string {
+// String convert to string
+func (c *Commit) String() string {
     var str string
     if c.parentOid == nil {
         str = fmt.Sprintf("tree %s\nauthor %s\ncommitter %s\n\n%s",
-            hex.EncodeToString(c.treeOid), c.author.ToString(), c.author.ToString(), c.message)
+            hex.EncodeToString(c.treeOid), c.author.String(), c.author.String(), c.message)
     } else {
         str = fmt.Sprintf("tree %s\nparent %s\nauthor %s\ncommitter %s\n\n%s",
-            hex.EncodeToString(c.treeOid), hex.EncodeToString(c.parentOid), c.author.ToString(),
-            c.author.ToString(), c.message)
+            hex.EncodeToString(c.treeOid), hex.EncodeToString(c.parentOid), c.author.String(),
+            c.author.String(), c.message)
     }
     return str
 }

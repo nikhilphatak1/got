@@ -100,16 +100,18 @@ func (t *Tree) Type() string {
 // call f on the parent tree after calling it on the child tree.
 func (t *Tree) Traverse(f func(*Tree)) {
     for _, potentialSubtree := range t.entries {
-        if reflect.TypeOf(potentialSubtree).String() == "main.Tree" {
+		// TODO may need a better way to check type instead of relying on
+		// package name like this
+        if reflect.TypeOf(potentialSubtree).String() == "got.Tree" {
             potentialSubtree.(*Tree).Traverse(f)
         }
     }
     f(t)
 }
 
-// ToString convert tree to string
-// TODO update this for new tree structure
-func (t *Tree) ToString() string {
+// String convert tree to string
+// This has been updated to handle the tree structure
+func (t *Tree) String() string {
     resultString := ""
     for name, entry := range t.entries {
         var tmpString string

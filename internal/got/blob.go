@@ -18,8 +18,8 @@ func (b *Blob) Type() string {
     return "blob"
 }
 
-// ToString convert to string
-func (b *Blob) ToString() string {
+// String convert to string
+func (b *Blob) String() string {
     return string(b.data)
 }
 

@@ -2,7 +2,7 @@ package got
 
 // StorableObject struct that can be written to got DB
 type StorableObject interface {
-    ToString() string
+    String() string
     SetOid(oid []byte)
     GetOid() []byte
     Type() string

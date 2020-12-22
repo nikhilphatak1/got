@@ -30,7 +30,7 @@ func NewDatabase(pathname string) Database {
 
 // Store store the given blob
 func (d Database) Store(object StorableObject) {
-    objectString := object.ToString()
+    objectString := object.String()
     // content: the data type (usually 'blob') then a space,
     // then the number of data bytes (number of runes) followed
     // by a null byte \x00 in hex, then the data as a byte array
