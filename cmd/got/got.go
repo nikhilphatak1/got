@@ -142,13 +142,14 @@ func GotAdd(argsWithoutAdd []string) {
 	database := got.NewDatabase(dbPath)
 	index := got.NewIndex(indexPath)
 
-	targetPath := argsWithoutAdd[0]
-	data := workspace.ReadFile(targetPath)
-	stat := workspace.StatFile(targetPath)
+	for _, eachFilePath := range argsWithoutAdd {
+		data := workspace.ReadFile(eachFilePath)
+		stat := workspace.StatFile(eachFilePath)
 
-	blob := got.NewBlob(data)
-	database.Store(blob)
-	index.Add(targetPath, hex.EncodeToString(blob.GetOid()), stat)
+		blob := got.NewBlob(data)
+		database.Store(blob)
+		index.Add(eachFilePath, hex.EncodeToString(blob.GetOid()), stat)
+	}
 
 	index.WriteUpdates()
 }

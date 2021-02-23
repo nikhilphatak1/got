@@ -3,6 +3,7 @@ package got
 import "os"
 
 // Index index of files
+// In theory entries should be in sorted order but that's a TODO
 type Index struct {
 	entries map[string]interface{}
 	lockfile *Lockfile
