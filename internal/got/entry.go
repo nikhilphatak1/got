@@ -54,7 +54,6 @@ func (e *Entry) ParentDirectories() []string {
 func (e *Entry) Mode() string {
 	if e.info.Mode()&0100 != 0 {
 		return e.executableMode
-	} else {
-		return e.standardMode
 	}
+	return e.standardMode
 }

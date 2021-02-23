@@ -142,6 +142,8 @@ func GotAdd(argsWithoutAdd []string) {
 	database := got.NewDatabase(dbPath)
 	index := got.NewIndex(indexPath)
 
+	index.Load()
+
 	for _, eachFilePath := range argsWithoutAdd {
 		data := workspace.ReadFile(eachFilePath)
 		stat := workspace.StatFile(eachFilePath)

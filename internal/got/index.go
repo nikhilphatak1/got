@@ -1,12 +1,18 @@
 package got
 
-import "os"
+import (
+	"crypto/sha1"
+	"hash"
+	"os"
+)
 
 // Index index of files
 // In theory entries should be in sorted order but that's a TODO
 type Index struct {
 	entries map[string]interface{}
 	lockfile *Lockfile
+	changed bool
+	pathname string
 	// TODO hash digest field here
 }
 
@@ -14,6 +20,12 @@ type Index struct {
 type IndexEntry struct {
 	ctime, ctimeNsec, mtime, mtimeNsec, dev, ino, uid, gid, size int
 	mode, oid, path string
+}
+
+// Checksum check dat sum
+type Checksum struct {
+	file *os.File
+	digest hash.Hash
 }
 
 const (
@@ -27,8 +39,19 @@ func NewIndex(indexPath string) *Index {
 	index := Index{}
 	index.entries = make(map[string]interface{})
 	index.lockfile = NewLockfile(indexPath)
+	index.changed = false
 	return &index
 }
+
+// NewChecksum create checksum
+func NewChecksum(file *os.File) *Checksum {
+	checksum := Checksum{}
+	checksum.file = file
+	checksum.digest = sha1.New()
+	return &checksum
+}
+
+// TODO functions to read and verify checksum
 
 // Add add to the index
 func (i *Index) Add(targetPath string, oid string, stat os.FileInfo) {
@@ -79,6 +102,41 @@ func (i *Index) WriteUpdates() bool {
 	i.finishWrite()
 
 	return true
+}
+
+// Load load index to be updated
+func (i *Index) Load() bool {
+	lock := i.lockfile.HoldForUpdate()
+	if lock {
+		i.load()
+		return true
+	}
+	return false
+}
+
+func (i *Index) load() {
+	i.clear()
+	file := i.indexFile()
+
+	if file != nil {
+		defer file.Close()
+		fileReader := NewChecksum(file)
+		// TODO read file header, read entries, then verify checksum
+		// after function is implemented above
+	}
+}
+
+func (i *Index) clear() {
+	i.entries = make(map[string]interface{})
+	i.changed = false
+}
+
+func (i *Index) indexFile() *os.File {
+	file, err := os.Open(i.pathname)
+	if err != nil {
+		return nil
+	}
+	return file
 }
 
 func (i *Index) beginWrite() {
