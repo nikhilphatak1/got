@@ -25,7 +25,8 @@ type IndexEntry struct {
 // Checksum check dat sum
 type Checksum struct {
 	file *os.File
-	digest hash.Hash
+	hasher hash.Hash
+	digest []byte
 }
 
 const (
@@ -47,11 +48,26 @@ func NewIndex(indexPath string) *Index {
 func NewChecksum(file *os.File) *Checksum {
 	checksum := Checksum{}
 	checksum.file = file
-	checksum.digest = sha1.New()
+	checksum.hasher = sha1.New()
+	checksum.digest = nil
 	return &checksum
 }
 
 // TODO functions to read and verify checksum
+func (c *Checksum) Read(size int) []byte {
+	buf := make([]byte, size)
+	bytecount, err := c.file.Read(buf)
+	if err != nil {
+		log.Panicln("Unable to read index checksum.", err)
+	}
+
+	if bytecount != size {
+		log.Panicln("Did not read expected number of bytes for index checksum.")
+	}
+
+	c.digest = sha.Sum(buf)
+	return buf
+}
 
 // Add add to the index
 func (i *Index) Add(targetPath string, oid string, stat os.FileInfo) {
